@@ -11,7 +11,7 @@ import os
 # 确保能找到astock模块
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from data import get_all_stocks, filter_candidates, save_market_snapshot, is_trading_time
+from data import get_all_stocks, filter_candidates, save_market_snapshot, is_trading_time, get_realtime_price
 from analysis import score_candidates
 from portfolio import load_portfolio, get_portfolio_summary
 from config import MARKET_DATA_FILE, PORTFOLIO_FILE, SUGGESTIONS_FILE
@@ -141,8 +141,8 @@ def _generate_suggestions(top_stocks: list, market_stats: dict, df):
     def _build_entry_plan(stock: dict) -> tuple[float, str, str]:
         """生成入场价格和方式。
 
-        这里不再用固定涨跌幅分档，而是把市场环境、技术形态、资金流和消息面合并成
-        一个入场强弱判断：越强势越倾向现价执行，分歧越大越倾向回落限价。
+        综合市场环境、技术形态、资金流和消息面决定入场积极度。
+        A股T+1特性：追高风险大，弱市保守，大跌需确认止跌再入场。
         """
         price = stock["price"]
         stock_change = stock.get("change_pct", 0) or 0
@@ -154,62 +154,85 @@ def _generate_suggestions(top_stocks: list, market_stats: dict, df):
         strength = 0
         reasons = []
 
-        # 市场环境先决定大方向：弱市优先低吸，强市允许更积极。
+        # 市场环境（权重加大：弱市成功率明显下降）
         if direction in {"强势上涨", "偏强震荡"}:
-            strength += 1
+            strength += 2
             reasons.append(f"大盘{direction}")
         elif direction == "弱势下跌":
-            strength -= 2
-            reasons.append("大盘偏弱")
+            strength -= 3
+            reasons.append("大盘弱势（成功率下降）")
         elif direction == "偏弱震荡":
             strength -= 1
             reasons.append("市场偏谨慎")
 
-        # 个股当日走势代表买盘意愿，但大涨也要防止追高，所以只适度加分。
-        if stock_change >= 4:
-            strength += 2
-            reasons.append(f"个股强势上涨{stock_change:.1f}%")
+        # 个股当日走势：T+1下大涨追高极危险，大跌需看是否止跌
+        if stock_change >= 7:
+            # 涨幅过大，T+1次日回调概率极高
+            strength -= 2
+            reasons.append(f"涨幅过大{stock_change:.1f}%(T+1追高风险)")
+        elif stock_change >= 4:
+            # 强势但有追高风险
+            strength += 0
+            reasons.append(f"个股强势{stock_change:.1f}%(注意追高)")
         elif stock_change >= 1:
             strength += 1
             reasons.append(f"个股走强{stock_change:.1f}%")
+        elif stock_change <= -5:
+            # 大跌后需看是否有止跌信号（资金流入或量缩企稳）
+            has_support = ("流入" in capital_flow or
+                          any(k in " ".join(signals) for k in ("反转", "回踩MA20", "触及下轨")))
+            if has_support:
+                strength += 2
+                reasons.append(f"个股大跌{stock_change:.1f}%但有止跌信号")
+            else:
+                strength -= 1
+                reasons.append(f"个股大跌{stock_change:.1f}%（未确认止跌）")
         elif stock_change <= -3:
-            strength -= 2
-            reasons.append(f"个股回调{stock_change:.1f}%")
+            # 中等回调，当前价有一定吸引力
+            strength += 0
+            reasons.append(f"个股回调{stock_change:.1f}%（已在低位）")
         elif stock_change < 0:
             strength -= 1
             reasons.append(f"个股小幅回落{stock_change:.1f}%")
 
-        # 综合评分高说明技术/形态/资金多个维度共振，允许减少等待回调幅度。
+        # 综合评分
         if score >= 85:
             strength += 2
             reasons.append(f"综合评分高({score})")
         elif score >= 75:
             strength += 1
             reasons.append(f"综合评分较强({score})")
+        elif score < 65:
+            strength -= 1
+            reasons.append(f"评分一般({score})")
 
-        # 技术面与形态面：突破、金叉、多头、新高偏强；死叉、空头、跌破偏弱。
-        bullish_keywords = ("多头", "金叉", "突破", "反转", "新高", "回踩MA20", "放量")
-        bearish_keywords = ("空头", "死叉", "跌破", "新低", "大跌", "高位死叉")
+        # 技术面与形态面
+        bullish_keywords = ("多头", "金叉", "突破", "反转", "新高", "回踩MA20", "放量上涨")
+        bearish_keywords = ("空头", "死叉", "跌破", "新低", "放量下跌", "高位死叉", "暴跌")
         bullish_hits = sum(1 for sig in signals if any(k in sig for k in bullish_keywords))
         bearish_hits = sum(1 for sig in signals if any(k in sig for k in bearish_keywords))
         if bullish_hits:
-            strength += min(bullish_hits, 2)
+            strength += min(bullish_hits, 3)
             reasons.append(f"技术偏强({bullish_hits})")
         if bearish_hits:
-            strength -= min(bearish_hits, 2)
+            strength -= min(bearish_hits, 3)
             reasons.append(f"技术有分歧({bearish_hits})")
 
-        # 资金流和消息面用于决定是“马上跟”还是“等回踩再接”。
+        # 资金流向（短线非常关键）
         if "连续" in capital_flow and "流入" in capital_flow:
-            strength += 2
+            strength += 3
             reasons.append("主力连续流入")
         elif "流入" in capital_flow:
             strength += 1
             reasons.append("主力流入")
+        elif "连续" in capital_flow and "流出" in capital_flow:
+            strength -= 3
+            reasons.append("主力连续流出")
         elif "流出" in capital_flow:
             strength -= 2
             reasons.append("主力流出")
 
+        # 消息面
         if news_sentiment == "positive":
             strength += 1
             reasons.append("消息面偏多")
@@ -217,22 +240,26 @@ def _generate_suggestions(top_stocks: list, market_stats: dict, df):
             strength -= 2
             reasons.append("消息面偏空")
 
-        # 映射成入场方式。任何情况下限价都不高于参考价，避免“主动加价买入”。
-        if strength >= 5:
+        # 映射成入场方式（范围扩大：从0.98~1.0覆盖更多情况）
+        if strength >= 6:
             entry_style = "直接买入"
             limit = round(price, 2)
-        elif strength >= 2:
+        elif strength >= 3:
             entry_style = "轻微回落买入"
             limit = round(price * 0.997, 2)
         elif strength >= 0:
             entry_style = "回踩限价买入"
-            limit = round(price * 0.992, 2)
-        else:
+            limit = round(price * 0.99, 2)
+        elif strength >= -3:
             entry_style = "低吸限价买入"
-            limit = round(price * 0.985, 2)
+            limit = round(price * 0.98, 2)
+        else:
+            # 极弱环境，需要更大安全垫
+            entry_style = "深度低吸"
+            limit = round(price * 0.97, 2)
 
         limit = min(round(price, 2), limit)
-        entry_reason = "、".join(reasons[:4]) if reasons else "按综合信号等待合适入场点"
+        entry_reason = "、".join(reasons[:5]) if reasons else "按综合信号等待合适入场点"
         return limit, entry_style, entry_reason
 
     def _build_exit_plan(stock: dict, holding: dict, current_price: float) -> tuple[float, str, str]:
@@ -364,13 +391,32 @@ def _generate_suggestions(top_stocks: list, market_stats: dict, df):
     # 买入建议：评分≥70、非已持仓、现金够买1手
     buy_positions = []
     total_invest = 0
+    price_stale_warning = False  # 标记是否有价格确认失败
     for s in top_stocks:
         if s["score"] < 70:
             break
         code = s["code"]
         if code in holdings:
             continue
-        price = s["price"]
+        
+        # ══ 实时价格二次确认 ══
+        # 交易时段必须用最新价计算限价，避免缓存延迟导致限价失真
+        cached_price = s["price"]
+        if is_trading_time():
+            realtime = get_realtime_price(code)
+            if realtime is not None:
+                price = realtime
+                # 若实时价与缓存差异超过1%，记录差异
+                if abs(realtime - cached_price) / cached_price > 0.01:
+                    s["price"] = realtime  # 更新为实时价供后续使用
+                    s["change_pct"] = round((realtime - cached_price) / cached_price * 100 + s.get("change_pct", 0), 2)
+            else:
+                # 交易时段实时价获取失败，标记警告
+                price = cached_price
+                price_stale_warning = True
+        else:
+            # 非交易时段用缓存价格（收盘后不变）
+            price = cached_price
         # 能否买得起1手（100股）
         cost_1lot = price * 100 + 10  # 预留手续费
         if cash - total_invest < cost_1lot:
@@ -392,7 +438,7 @@ def _generate_suggestions(top_stocks: list, market_stats: dict, df):
             "code": code,
             "name": s["name"],
             "shares": shares,
-            "reference_price": price,
+            "reference_price": price,  # 分析时刻的盘中最新价
             "limit_price": limit,
             "entry_style": entry_style,
             "entry_reason": entry_reason,
@@ -400,6 +446,7 @@ def _generate_suggestions(top_stocks: list, market_stats: dict, df):
             "take_profit": round(price * 1.08, 2),
             "reason": reason,
             "score": s["score"],
+            "change_pct": s.get("change_pct", 0),  # 当日涨跌幅，供面板展示参考
         })
         total_invest += shares * price
         if len(buy_positions) >= 3:  # 最多推荐3只
@@ -418,6 +465,9 @@ def _generate_suggestions(top_stocks: list, market_stats: dict, df):
             f"基于技术、资金、消息和市场环境综合判断，筛选出{len(buy_positions)}只候选标的；"
             "入场价按强弱区分为直接买入或回踩限价买入"
         )
+        # 实时价格确认失败时追加警告
+        if price_stale_warning:
+            buy_logic += "（⚠️ 部分股票实时价获取失败，限价可能不准确，请刷新后重新确认）"
 
     # 持仓建议
     holding_advice = []
@@ -519,6 +569,85 @@ def _generate_suggestions(top_stocks: list, market_stats: dict, df):
         if len(news_highlights) >= 8:
             break
 
+    # ═══ 生成综合操作建议（结构化深度分析结论）═══
+    avg_change = market_stats.get("avg_change", 0)
+    
+    # 1. 判定操作结论
+    if holdings and any(h.get("current_price", h["buy_price"]) <= h.get("stop_loss", 0) for h in pf.get("holdings", [])):
+        conclusion = "立即止损"
+    elif avg_change < -1 and not buy_positions:
+        conclusion = "继续空仓观望"
+    elif avg_change < -1 and buy_positions:
+        conclusion = "观望为主，低吸限价挂单"
+    elif buy_positions and avg_change >= 0:
+        conclusion = f"可小仓介入{buy_positions[0]['name']}"
+    elif holdings and not holding_advice:
+        conclusion = "持仓正常，继续持有"
+    elif holding_advice:
+        conclusion = "处理持仓风险"
+    else:
+        conclusion = "空仓等待机会"
+
+    # 2. 生成理由列表
+    reasons = []
+    if avg_change < -1:
+        reasons.append(f"均涨{avg_change:.2f}%触发弱市不攻原则——不建议新开仓")
+    elif avg_change < 0:
+        reasons.append(f"均涨{avg_change:.2f}%市场偏弱，需谨慎操作")
+    else:
+        reasons.append(f"均涨{avg_change:+.2f}%市场偏强，可适度积极")
+    
+    if buy_positions:
+        p = buy_positions[0]
+        chg = p.get("change_pct", 0)
+        if chg < -5:
+            discount = abs(round((p["limit_price"]/p["reference_price"]-1)*100, 1))
+            reasons.append(f"候选{p['name']}当日{chg:+.1f}%——系统判定[{p.get('entry_style','低吸')}]（较当前价低{discount}%）")
+        elif chg > 5:
+            reasons.append(f"候选{p['name']}当日{chg:+.1f}%——涨幅过大，T+1追高风险")
+        else:
+            reasons.append(f"候选{p['name']}评分{p['score']}，{p.get('entry_style','')}")
+    elif not holdings:
+        reasons.append("暂无评分≥70且信号明确的买入标的")
+    
+    if holding_advice:
+        for h in holding_advice[:2]:
+            reasons.append(f"持仓{h['name']}建议{h.get('exit_style','处理')}——{h.get('exit_reason','')[:30]}")
+    
+    if risk_level == "高":
+        reasons.append(f"市场风险等级[高]，整体成功率下降")
+    
+    if price_stale_warning:
+        reasons.append("⚠️ 实时价格获取失败，限价基于缓存数据——请按S刷新后重新确认")
+
+    # 3. 下一步行动
+    next_actions = []
+    if buy_positions and avg_change >= -1:
+        for p in buy_positions[:2]:
+            next_actions.append(f"关注 {p['code']} {p['name']}（评分{p['score']}，{p.get('entry_style','')}限价{p.get('limit_price','')}）")
+    elif buy_positions and avg_change < -1:
+        next_actions.append(f"若明日市场转好（均涨>0），优先关注 {buy_positions[0]['code']} {buy_positions[0]['name']}")
+    if watch_list:
+        for w in watch_list[:2]:
+            next_actions.append(f"观察 {w['code']} {w['name']}——{w.get('reason','')[:40]}")
+
+    # 4. 观察/不做的事
+    watch_notes = []
+    if do_not_buy:
+        for x in do_not_buy[:2]:
+            watch_notes.append(f"{x['code']} {x['name']}——{x.get('reason','不追')}")
+    for w in watch_list[:3]:
+        reason = w.get("reason", "")
+        if "涨" in reason and any(c.isdigit() for c in reason):
+            watch_notes.append(f"{w['name']}涨幅较大但评分不足，不追")
+
+    operation_advice = {
+        "conclusion": conclusion,
+        "reasons": reasons[:5],
+        "next_actions": next_actions[:4],
+        "watch_notes": watch_notes[:4],
+    }
+
     # 组装 suggestions.json
     tz = timezone(timedelta(hours=8))
     suggestions = {
@@ -544,6 +673,7 @@ def _generate_suggestions(top_stocks: list, market_stats: dict, df):
             "watch_list": watch_list,
         },
         "timing_advice": timing,
+        "operation_advice": operation_advice,
         "news_highlights": news_highlights,
     }
 

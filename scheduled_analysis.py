@@ -60,21 +60,35 @@ def _load_yesterday_review() -> dict:
 
 
 def _get_market_data():
-    """获取市场数据，返回 (df, candidates, top_stocks, market_stats) 或 None"""
+    """获取市场数据，返回 (df, candidates, top_stocks, market_stats) 或 None。
+    
+    API 失败时不再静默使用缓存：交易时段必须获取实时数据，
+    非交易时段才允许使用缓存（并在 market_stats 中标记 is_cached=True）。
+    """
+    from data import is_trading_time
     df = get_all_stocks()
+    is_cached = False
+    
     if df.empty:
-        # 尝试用缓存的 market_data.json（结构是 dict with "stocks" list）
-        try:
-            import pandas as pd
-            with open(MARKET_DATA_FILE, "r", encoding="utf-8") as f:
-                cached = json.load(f)
-            stocks = cached.get("stocks", [])
-            if not stocks:
-                return None
-            df = pd.DataFrame(stocks)
-            print("  ⚠️ 使用缓存数据（非实时）")
-        except (FileNotFoundError, ValueError, json.JSONDecodeError, OSError):
+        if is_trading_time():
+            # 交易时段 API 失败：提示用户重新拉取，不用过时缓存
+            print("  ❌ 实时行情获取失败！交易时段不使用缓存，请检查网络后重试。")
+            print("  💡 提示：可稍后按 S 键（强制扫描）重新拉取数据")
             return None
+        else:
+            # 非交易时段允许用缓存（收盘后数据不会变）
+            try:
+                import pandas as pd
+                with open(MARKET_DATA_FILE, "r", encoding="utf-8") as f_cache:
+                    cached = json.load(f_cache)
+                stocks = cached.get("stocks", [])
+                if not stocks:
+                    return None
+                df = pd.DataFrame(stocks)
+                is_cached = True
+                print("  ⚠️ 非交易时段，使用缓存数据")
+            except (FileNotFoundError, ValueError, json.JSONDecodeError, OSError):
+                return None
 
     candidates = filter_candidates(df)
     if candidates is None or (hasattr(candidates, 'empty') and candidates.empty) or len(candidates) == 0:
@@ -89,6 +103,7 @@ def _get_market_data():
         "limit_up": int((df["change_pct"] > 9.5).sum()) if "change_pct" in df.columns else 0,
         "limit_down": int((df["change_pct"] < -9.5).sum()) if "change_pct" in df.columns else 0,
         "avg_change": round(float(df["change_pct"].mean()), 2) if "change_pct" in df.columns else 0,
+        "is_cached": is_cached,
     }
 
     return df, candidates, top, market_stats

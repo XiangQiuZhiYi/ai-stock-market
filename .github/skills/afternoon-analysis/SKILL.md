@@ -186,7 +186,9 @@ print('已确认/补充关键字段')"
 
 ## 输出文件
 - `analysis_logs/YYYY-MM-DD/afternoon.json` — 尾盘复盘记录
-- `suggestions.json` — 面板数据更新（含明日关注）
+- `suggestions.json` — 面板数据更新（含明日关注），更新后 dashboard 会刷新以下区域：
+  - **🔴 买入建议 / 🟢 卖出建议**：读取 `buy_plan` 和 `holding_advice`
+  - **🧭 整体判断**（买卖建议板块下方）：读取 `market_summary`（direction / avg_change / risk_level / hot_sectors）+ `timing_advice` + `buy_plan.logic`，一行展示市场整体判断
 
 ## 与其他 Skill 的衔接
 - 本次 `review_summary` + `next_day_plan` → 明日早盘 morning skill 第一步读取

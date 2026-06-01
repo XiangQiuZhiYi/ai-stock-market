@@ -111,7 +111,8 @@ print('action_plan count:', len(d.get('action_plan',[])))"
 }
 ```
 
-同时 `suggestions.json` 也已自动更新，面板会在下次刷新时展示。
+同时 `suggestions.json` 也已自动更新，面板会在下次刷新时展示：
+- **🧭 整体判断栏**（买卖建议板块下方）：自动读取 `market_summary.direction`、`avg_change`、`risk_level`、`hot_sectors` 及 `timing_advice` / `buy_plan.logic`，一行展示市场整体判断，颜色语义为涨红跌绿、高风险绿低风险红。
 
 ## 决策原则
 
@@ -123,7 +124,9 @@ print('action_plan count:', len(d.get('action_plan',[])))"
 
 ## 输出文件
 - `analysis_logs/YYYY-MM-DD/morning.json` — 完整分析记录
-- `suggestions.json` — 面板展示数据
+- `suggestions.json` — 面板展示数据，更新后 dashboard 会刷新以下区域：
+  - **🔴 买入建议 / 🟢 卖出建议**：读取 `buy_plan` 和 `holding_advice`
+  - **🧭 整体判断**（买卖建议板块下方）：读取 `market_summary`（direction / avg_change / risk_level / hot_sectors）+ `timing_advice` + `buy_plan.logic`，一行展示市场整体判断
 
 ## 关键 API 说明
 - 数据来源：eastmoney 免费接口，无需 key

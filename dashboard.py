@@ -97,7 +97,7 @@ class HoldingsTable(Static):
 
 
 class SectorPanel(Static):
-    """板块信息面板：市场方向 + 热门板块"""
+    """综合操作建议面板：读取 operation_advice 展示深度分析结论"""
     def update_data(self):
         try:
             with open(SUGGESTIONS_FILE, "r") as f:
@@ -105,17 +105,51 @@ class SectorPanel(Static):
         except (FileNotFoundError, json.JSONDecodeError, OSError):
             self.update("[dim]等待分析...[/]")
             return
-        ms = d.get("market_summary", {})
-        lines = [
-            f"📈 方向: [bold]{ms.get('direction','-')}[/]  ⚡ 风险: {ms.get('risk_level','-')}",
-            "",
-        ]
-        for s in ms.get("hot_sectors", [])[:5]:
-            lines.append(f"  • {s}")
-        bp = d.get("buy_plan", {}).get("summary", {})
-        if bp:
+
+        advice = d.get("operation_advice", {})
+        if not advice:
+            self.update("[dim]等待分析...[/]")
+            return
+
+        conclusion = advice.get("conclusion", "等待信号")
+        reasons = advice.get("reasons", [])
+        next_actions = advice.get("next_actions", [])
+        watch_notes = advice.get("watch_notes", [])
+
+        lines = []
+
+        # 结论（醒目展示）
+        # 根据结论内容决定颜色
+        if any(k in conclusion for k in ("空仓", "观望", "等待")):
+            con_color = "yellow"
+        elif any(k in conclusion for k in ("止损", "风险")):
+            con_color = NEGATIVE_COLOR
+        elif any(k in conclusion for k in ("介入", "买入", "积极")):
+            con_color = POSITIVE_COLOR
+        else:
+            con_color = "white"
+        lines.append(f"[bold {con_color}]▶ {conclusion}[/]")
+        lines.append("")
+
+        # 理由（编号列表）
+        if reasons:
+            for i, r in enumerate(reasons[:4], 1):
+                lines.append(f"[dim]{i}.[/] {r}")
             lines.append("")
-            lines.append(f"💰 投入: {bp.get('total_invest','-')}  💵 余: {bp.get('remaining_cash','-')}")
+
+        # 下一步行动
+        if next_actions:
+            lines.append(f"[{POSITIVE_COLOR}]下一步:[/]")
+            for a in next_actions[:3]:
+                lines.append(f"  • {a}")
+            lines.append("")
+
+        # 观察/不做
+        if watch_notes:
+            lines.append(f"[{NEGATIVE_COLOR}]不做:[/]")
+            for n in watch_notes[:3]:
+                lines.append(f"  • {n}")
+
         self.update("\n".join(lines))
 
 
@@ -203,7 +237,11 @@ class AIRecommendations(Static):
             if logic:
                 content.append(f"[dim]{logic}[/]\n")
             for pos in bp.get("positions", []):
-                content.append(f"[bold {POSITIVE_COLOR}]{pos['code']}[/] {pos['name']} {pos.get('shares','')}股")
+                # 显示当日涨跌幅帮助判断参考价是否合理
+                chg = pos.get("change_pct", 0)
+                chg_color = gain_loss_color(chg)
+                chg_str = f"[{chg_color}]{chg:+.1f}%[/]" if chg else ""
+                content.append(f"[bold {POSITIVE_COLOR}]{pos['code']}[/] {pos['name']} {pos.get('shares','')}股 {chg_str}")
                 content.append(f"  参考价: {pos.get('reference_price','-')}  限价: [bold yellow]{pos.get('limit_price','-')}[/]")
                 if pos.get("entry_style"):
                     content.append(f"  入场方式: {pos['entry_style']}")
@@ -411,6 +449,7 @@ class ChartScreen(ModalScreen[None]):
     CSS = """ChartScreen { align: center middle; background: rgba(0,0,0,0.85); } #chart-box { width: 96; height: auto; max-height: 34; border: solid $primary 50%; background: $surface; padding: 1 0; }"""
     BINDINGS = [
         Binding("escape", "dismiss_chart", "返回"), Binding("q", "dismiss_chart", "返回"),
+        Binding("r", "refresh_chart", "重拉"),
         Binding("left", "prev_stock", "上一个", show=False), Binding("right", "next_stock", "下一个", show=False),
     ]
     def __init__(self, stocks: list, index: int = 0, cache: dict = None):
@@ -418,6 +457,7 @@ class ChartScreen(ModalScreen[None]):
         self._stocks = stocks
         self._idx = index % len(stocks) if stocks else 0
         self._cache = cache or {}
+        self._force_refresh = False
     @property
     def _cur(self):
         return self._stocks[self._idx]
@@ -432,12 +472,26 @@ class ChartScreen(ModalScreen[None]):
         box = self.query_one("#chart-box", Static)
         box.styles.width = max(96, min(self.app.size.width - 4, 180))
         box.styles.max_height = max(24, min(self.app.size.height - 2, 40))
-    def _load(self):
+    def _render_loading(self, message: str):
+        total = len(self._stocks)
+        nav = f" ({self._idx+1}/{total})" if total > 1 else ""
+        s = self._cur
+        self.query_one("#chart-box", Static).update(
+            f"\n  📈 {s['name']} ({s['code']}){nav}\n\n  [dim]{message}[/]\n"
+        )
+    def _load(self, force_refresh: bool = False):
+        # 手动刷新时强制绕过缓存，直接针对当前股票重拉分时数据。
+        self._force_refresh = force_refresh
+        self._render_loading("正在拉取分时数据..." if force_refresh else "加载中...")
         self.run_worker(self._do_load_chart, thread=True)
     def _do_load_chart(self):
         code = self._cur["code"]
-        trends = self._cache.get(code)
-        # 缓存中没有有效分时数据 → 实时拉取
+        force_refresh = self._force_refresh
+        self._force_refresh = False
+        trends = None if force_refresh else self._cache.get(code)
+        # 缓存中没有有效分时数据，或用户明确按 R 强制刷新 → 实时拉取
+        if force_refresh:
+            self._cache.pop(code, None)
         if not trends or len(trends) < 5:
             fresh = get_minute_trend(code)
             if fresh and len(fresh) >= 5:
@@ -445,15 +499,22 @@ class ChartScreen(ModalScreen[None]):
                 self._cache[code] = trends
         idx, total = self._idx, len(self._stocks)
         def u():
-            self._show(trends, idx, total)
+            self._show(trends, idx, total, force_refresh)
         self.app.call_from_thread(u)
-    def _show(self, trends, idx, total):
+    def _show(self, trends, idx, total, force_refresh: bool = False):
         s = self._cur
         code, name, bp = s["code"], s["name"], s.get("buy_price", 0)
         if not trends or len(trends) < 5:
             nav = f" ({idx+1}/{total})" if total > 1 else ""
-            hint = "当前休市，暂无分时数据" if not is_trading_time() else "暂无分时数据，请按 S 扫描后查看"
-            self.query_one("#chart-box", Static).update(f"\n  📈 {name} ({code}){nav}\n\n  [dim]{hint}[/]\n")
+            if not is_trading_time():
+                hint = "当前休市，暂无分时数据"
+            elif force_refresh:
+                hint = "重拉失败，请稍后再按 R 重试"
+            else:
+                hint = "暂无分时数据，按 R 针对当前股票重拉"
+            self.query_one("#chart-box", Static).update(
+                f"\n  📈 {name} ({code}){nav}\n\n  [dim]{hint}[/]\n\n  [dim]R 重拉  ESC/Q 返回[/]\n"
+            )
             return
         prices = [t["price"] for t in trends]
         times = [t["time"][:5] for t in trends]
@@ -494,6 +555,7 @@ class ChartScreen(ModalScreen[None]):
             lines.append(f" [dim]━━ 买入价: {bp:.2f}[/]")
         lines.append("")
         lines.append(f" 📊 开:{first:.2f}  收:{latest:.2f}  高:{pmax:.2f}  低:{pmin:.2f}  涨跌: [{cc}]{chg:+.2f}%[/]")
+        lines.append(" [dim]R 重拉当前股票分时  ESC/Q 返回[/]")
         self.query_one("#chart-box", Static).update("\n".join(lines))
     def action_prev_stock(self):
         if len(self._stocks) > 1:
@@ -503,6 +565,8 @@ class ChartScreen(ModalScreen[None]):
         if len(self._stocks) > 1:
             self._idx = (self._idx + 1) % len(self._stocks)
             self._load()
+    def action_refresh_chart(self):
+        self._load(force_refresh=True)
     def action_dismiss_chart(self):
         self.dismiss(None)
 
@@ -724,7 +788,7 @@ class AstockDashboard(App):
     #sector-top { height: 50%; border-bottom: solid $primary 20%; }
     #news-section { height: 50%; padding-top: 1; }
     #news-content { height: 1fr; }
-    #judgment-section { height: 2; padding: 0 1; background: $boost; border-top: solid $primary 30%; }
+    #judgment-section { height: 3; padding: 0 1; background: $boost; border-top: solid $primary 30%; }
     #judgment-panel { height: 1; }
     #bottom-section { height: 35%; min-height: 12; layout: horizontal; border-top: solid $primary 30%; }
     #buy-panel { width: 50%; padding: 0 1; border-right: solid $primary 20%; }
@@ -759,7 +823,7 @@ class AstockDashboard(App):
                     yield WatchList(id="watch-table")
             with Vertical(id="sector-panel"):
                 with Vertical(id="sector-top"):
-                    yield Label("🔥 板块", classes="section-title")
+                    yield Label("⚖️ 操作建议", classes="section-title")
                     yield SectorPanel(id="sector-content")
                 with Vertical(id="news-section"):
                     yield Label("📰 消息面", classes="section-title")

@@ -113,6 +113,37 @@ def get_all_stocks() -> pd.DataFrame:
     return df
 
 
+def get_realtime_price(code: str) -> Optional[float]:
+    """获取单只股票的实时最新价（东方财富个股快照接口）。
+    
+    用于在生成买入建议前做二次价格确认，避免用过时的缓存价格计算限价。
+    返回 None 表示获取失败。
+    """
+    market = "0" if code.startswith(("0", "3")) else "1"
+    secid = f"{market}.{code}"
+    url = "https://push2.eastmoney.com/api/qt/stock/get"
+    params = {
+        "secid": secid,
+        "ut": "bd1d9ddb04089700cf9c27f6f7426281",
+        "fields": "f43,f44,f45,f46,f47,f48,f170",
+        "invt": 2,
+        "fltt": 2,
+    }
+    try:
+        data = _fetch_json(url, params)
+        if not data or data.get("rc") != 0:
+            return None
+        d = data.get("data", {})
+        # f43=最新价 f44=最高 f45=最低 f46=开盘
+        price = d.get("f43")
+        if price and price != "-" and float(price) > 0:
+            return float(price)
+        return None
+    except Exception as e:
+        logger.warning(f"获取{code}实时价失败: {e}")
+        return None
+
+
 def get_kline(code: str, period: str = "daily", days: int = 90) -> Optional[pd.DataFrame]:
     """K线（新浪接口）"""
     market = "sh" if code.startswith(("6", "9", "5")) else "sz"
@@ -153,35 +184,50 @@ def get_minute_trend(code: str) -> Optional[list]:
         "secid": secid,
         "fields1": "f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13",
         "fields2": "f51,f52,f53,f54,f55,f56,f57,f58",
+        # 统一补上东财常用 ut，减少接口偶发拒绝/空返回。
+        "ut": "bd1d9ddb04089700cf9c27f6f7426281",
         "ndays": 1, "iscr": 0, "iscca": 0,
     }
     url = "https://push2.eastmoney.com/api/qt/stock/trends2/get"
-    try:
-        data = _fetch_json(url, params)
-        if not data or not isinstance(data, dict):
-            return None
-        inner = data.get("data")
-        if not inner or not isinstance(inner, dict):
-            return None
-        trends = inner.get("trends", [])
-        if not trends:
-            return None
-        result = []
-        for line in trends:
-            parts = line.split(",")
-            if len(parts) >= 8:
-                try:
-                    result.append({
-                        "time": parts[0][-8:],
-                        "price": float(parts[2]),
-                        "avg": float(parts[7]),
-                    })
-                except (ValueError, IndexError):
-                    continue
-        return result if result else None
-    except Exception as e:
-        logger.warning(f"获取{code}分时失败: {e}")
-        return None
+    last_error = None
+    for attempt in range(3):
+        try:
+            data = _fetch_json(url, params)
+            if not data or not isinstance(data, dict):
+                last_error = "empty response"
+                time.sleep(0.6 * (attempt + 1))
+                continue
+            inner = data.get("data")
+            if not inner or not isinstance(inner, dict):
+                last_error = "missing data"
+                time.sleep(0.6 * (attempt + 1))
+                continue
+            trends = inner.get("trends", [])
+            if not trends:
+                last_error = "empty trends"
+                time.sleep(0.6 * (attempt + 1))
+                continue
+            result = []
+            for line in trends:
+                parts = line.split(",")
+                if len(parts) >= 8:
+                    try:
+                        result.append({
+                            "time": parts[0][-8:],
+                            "price": float(parts[2]),
+                            "avg": float(parts[7]),
+                        })
+                    except (ValueError, IndexError):
+                        continue
+            if result:
+                return result
+            last_error = "parsed no trend rows"
+        except Exception as e:
+            last_error = str(e)
+        # 分时接口偶发 RemoteDisconnected，做短退避重试。
+        time.sleep(0.6 * (attempt + 1))
+    logger.warning(f"获取{code}分时失败: {last_error}")
+    return None
 
 
 def get_stock_quote(code: str) -> Optional[float]:

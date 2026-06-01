@@ -125,7 +125,9 @@ print('afternoon_strategy:', d.get('afternoon_strategy',[]))"
 
 ## 输出文件
 - `analysis_logs/YYYY-MM-DD/midday.json` — 午间分析记录（含上午复盘 + 下午策略）
-- `suggestions.json` — 面板数据更新
+- `suggestions.json` — 面板数据更新，更新后 dashboard 会刷新以下区域：
+  - **🔴 买入建议 / 🟢 卖出建议**：读取 `buy_plan` 和 `holding_advice`
+  - **🧭 整体判断**（买卖建议板块下方）：读取 `market_summary`（direction / avg_change / risk_level / hot_sectors）+ `timing_advice` + `buy_plan.logic`，一行展示市场整体判断
 
 **重要：** 午间记录中的 `afternoon_strategy` 字段将在尾盘分析时被读取，用于对比"下午计划 vs 实际"。
 
