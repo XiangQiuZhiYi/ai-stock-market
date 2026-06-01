@@ -1,6 +1,6 @@
 {
   "session": "afternoon",
-  "timestamp": "2026-06-01T13:43:32.749117+08:00",
+  "timestamp": "2026-06-01T14:55:37.763839+08:00",
   "focus": "全日复盘+次日展望",
   "morning_reference": {
     "decision": "市场弱势，建议观望。计划执行5条操作。",
@@ -54,14 +54,14 @@
   },
   "market": {
     "stats": {
-      "up_count": 31,
-      "down_count": 69,
-      "limit_up": 5,
-      "limit_down": 5,
-      "avg_change": -1.88,
+      "up_count": 25,
+      "down_count": 75,
+      "limit_up": 3,
+      "limit_down": 9,
+      "avg_change": -3.18,
       "is_cached": false
     },
-    "day_summary": "均涨-1.88%"
+    "day_summary": "均涨-3.18%"
   },
   "portfolio": {
     "cash": 4904.16,
@@ -116,51 +116,64 @@
     "executed": []
   },
   "lessons": "运行正常，继续持有观察",
-  "next_day_plan": "市场弱势，只守不攻，优先处理止损和回撤；600011 华能国际 回踩 9.33 附近再观察；000021 深科技 回踩 36.9 附近再观察；002436 兴森科技 回踩 38.56 附近再观察；若大盘低开超过1%，暂缓所有新开仓",
+  "next_day_plan": "市场弱势，只守不攻，优先处理止损和回撤；002436 兴森科技 回踩 38.12 附近再观察；600011 华能国际 回踩 9.63 附近再观察；000021 深科技 回踩 36.09 附近再观察；若大盘低开超过1%，暂缓所有新开仓",
   "next_day_focus": [
+    {
+      "code": "002436",
+      "name": "兴森科技",
+      "score": 91,
+      "signal": "多头排列 ↑",
+      "target_price": 38.12
+    },
     {
       "code": "600011",
       "name": "华能国际",
-      "score": 94,
+      "score": 89,
       "signal": "多头排列 ↑",
-      "target_price": 9.33
+      "target_price": 9.63
     },
     {
       "code": "000021",
       "name": "深科技",
-      "score": 81,
+      "score": 83,
       "signal": "多头排列 ↑",
-      "target_price": 36.9
+      "target_price": 36.09
     },
     {
-      "code": "002436",
-      "name": "兴森科技",
-      "score": 78,
+      "code": "300433",
+      "name": "蓝思科技",
+      "score": 79,
       "signal": "多头排列 ↑",
-      "target_price": 38.56
+      "target_price": 41.54
     },
     {
       "code": "600176",
       "name": "中国巨石",
       "score": 77,
       "signal": "多头排列 ↑",
-      "target_price": 37.94
-    },
-    {
-      "code": "000539",
-      "name": "粤电力Ａ",
-      "score": 75,
-      "signal": "短期反弹",
-      "target_price": 9.69
+      "target_price": 38.03
     }
   ],
-  "review_summary": "市场均涨-1.88%偏弱，无持仓变动；今日以观察为主，明日优先风险控制。",
+  "review_summary": "市场均涨-3.18%偏弱，无持仓变动；今日以观察为主，明日优先风险控制。",
   "top_candidates": [
+    {
+      "code": "002436",
+      "name": "兴森科技",
+      "score": 91,
+      "price": 38.43,
+      "signals": [
+        "多头排列 ↑",
+        "MACD多头",
+        "KDJ金叉",
+        "RSI=67",
+        "主力今日流入1.62亿 (5日累计流入)"
+      ]
+    },
     {
       "code": "600011",
       "name": "华能国际",
-      "score": 94,
-      "price": 9.41,
+      "score": 89,
+      "price": 9.71,
       "signals": [
         "多头排列 ↑",
         "MACD多头",
@@ -172,34 +185,34 @@
     {
       "code": "000021",
       "name": "深科技",
-      "score": 81,
-      "price": 37.2,
+      "score": 83,
+      "price": 36.38,
       "signals": [
         "多头排列 ↑",
         "MACD多头",
         "RSI=66",
-        "消息面强利好(8条)",
-        "大跌-6.5%"
+        "回踩MA20",
+        "消息面强利好(8条)"
       ]
     },
     {
-      "code": "002436",
-      "name": "兴森科技",
-      "score": 78,
-      "price": 38.87,
+      "code": "300433",
+      "name": "蓝思科技",
+      "score": 79,
+      "price": 41.87,
       "signals": [
         "多头排列 ↑",
         "MACD多头",
-        "KDJ金叉",
-        "RSI=67",
-        "消息面偏多"
+        "KDJ超买",
+        "超买(RSI=77)",
+        "60日新高"
       ]
     },
     {
       "code": "600176",
       "name": "中国巨石",
       "score": 77,
-      "price": 38.25,
+      "price": 38.34,
       "signals": [
         "多头排列 ↑",
         "MACD多头",
@@ -222,67 +235,54 @@
       ]
     },
     {
-      "code": "000767",
-      "name": "晋控电力",
+      "code": "000338",
+      "name": "潍柴动力",
       "score": 72,
-      "price": 6.14,
+      "price": 33.34,
       "signals": [
         "多头排列 ↑",
-        "MACD多头",
-        "RSI=68",
-        "触及上轨",
-        "60日新高"
-      ]
-    },
-    {
-      "code": "300433",
-      "name": "蓝思科技",
-      "score": 71,
-      "price": 42.55,
-      "signals": [
-        "多头排列 ↑",
-        "MACD多头",
-        "KDJ超买",
-        "超买(RSI=77)",
-        "60日新高"
-      ]
-    },
-    {
-      "code": "002185",
-      "name": "华天科技",
-      "score": 62,
-      "price": 18.43,
-      "signals": [
-        "多头排列 ↑",
-        "MACD多头",
-        "KDJ死叉",
-        "RSI=70"
-      ]
-    },
-    {
-      "code": "600276",
-      "name": "恒瑞医药",
-      "score": 62,
-      "price": 49.22,
-      "signals": [
-        "空头排列 ↓",
         "MACD空头",
-        "KDJ金叉",
-        "RSI=40",
-        "底部放量反转(跌-15%后)"
+        "RSI=59",
+        "回踩MA20",
+        "消息面利好"
       ]
     },
     {
       "code": "002241",
       "name": "歌尔股份",
-      "score": 62,
-      "price": 26.71,
+      "score": 67,
+      "price": 26.48,
       "signals": [
         "多头排列 ↑",
         "MACD多头",
         "KDJ死叉",
         "RSI=56",
         "放量突破平台(振幅10%)"
+      ]
+    },
+    {
+      "code": "000725",
+      "name": "京东方Ａ",
+      "score": 62,
+      "price": 5.35,
+      "signals": [
+        "多头排列 ↑",
+        "MACD多头",
+        "KDJ死叉",
+        "RSI=68"
+      ]
+    },
+    {
+      "code": "600276",
+      "name": "恒瑞医药",
+      "score": 62,
+      "price": 49.1,
+      "signals": [
+        "空头排列 ↓",
+        "MACD空头",
+        "KDJ金叉",
+        "RSI=40",
+        "底部放量反转(跌-15%后)"
       ]
     }
   ]

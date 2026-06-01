@@ -17,7 +17,9 @@ from portfolio import (
     load_portfolio, get_portfolio_summary, save_portfolio,
     record_buy, record_sell, calc_buy_fee, calc_sell_fee,
 )
-from config import REFRESH_INTERVAL, SUGGESTIONS_FILE, MARKET_DATA_FILE
+from config import (
+    REFRESH_INTERVAL, SUGGESTIONS_FILE, MARKET_DATA_FILE, LONGTERM_MAX_PRICE, LONGTERM_SUGGESTIONS_FILE,
+)
 
 # 面板按 A 股常用语义显示：上涨/利好 用红色，下跌/利空 用绿色。
 POSITIVE_COLOR = "red"
@@ -710,6 +712,135 @@ class TradeHistoryScreen(ModalScreen[None]):
         self.dismiss(None)
 
 
+class LongTermPanelScreen(ModalScreen[None]):
+    """独立的中长期投资面板。
+
+    只读取 longterm_suggestions.json，和短线 suggestions.json 完全隔离，
+    避免中长期展示逻辑影响现有短线交易面板。
+    """
+
+    CSS = """
+    LongTermPanelScreen { align: center middle; background: rgba(0,0,0,0.85); }
+    #longterm-box {
+        width: 116;
+        height: auto;
+        max-height: 40;
+        border: solid $primary 50%;
+        background: $surface;
+        padding: 1 2;
+    }
+    """
+    BINDINGS = [Binding("escape", "dismiss_panel", "返回"), Binding("q", "dismiss_panel", "返回")]
+
+    def compose(self):
+        yield Static("加载中...", id="longterm-box")
+
+    def on_mount(self):
+        # 不能覆盖 Textual 内部的 _render()，否则 Screen 本身会在绘制时崩溃。
+        self._render_panel()
+
+    def _render_panel(self):
+        try:
+            with open(LONGTERM_SUGGESTIONS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError, OSError):
+            self.query_one("#longterm-box", Static).update(
+                "\n  📈 [bold]中长期投资面板[/]\n\n"
+                "  [dim]暂无中长期分析结果。先运行:[/]\n"
+                "  [bold]python3 longterm_analysis.py[/]\n"
+            )
+            return
+
+        market_view = data.get("market_view", {})
+
+        # 展示层再做一次价格上限过滤，避免旧分析文件里的高价股继续出现在面板上。
+        def _within_price_limit(items):
+            return [
+                item for item in items
+                if isinstance(item, dict) and float(item.get("price", 0) or 0) <= LONGTERM_MAX_PRICE
+            ]
+
+        first_choices = _within_price_limit(data.get("first_choices", []))
+        backups = _within_price_limit(data.get("backups", []))
+        watch_only = _within_price_limit(data.get("watch_only", []))
+        timestamp = data.get("timestamp", "")
+        stance = market_view.get("stance", "未分析")
+        summary = market_view.get("summary", "")
+        avg_score = market_view.get("avg_candidate_score", "-")
+        market_avg_change = market_view.get("market_avg_change", "-")
+
+        # 中长期面板强调策略基调：进攻/均衡/防守，而不是短线涨跌节奏。
+        if "进攻" in stance:
+            stance_color = POSITIVE_COLOR
+        elif "防守" in stance:
+            stance_color = NEGATIVE_COLOR
+        else:
+            stance_color = "yellow"
+
+        lines = []
+        lines.append("📈 [bold]中长期投资面板[/]")
+        if timestamp:
+            lines.append(f"[dim]更新时间: {timestamp.replace('T', ' ')[:16]}[/]")
+        lines.append("")
+        lines.append(
+            f"▶ 基调: [bold {stance_color}]{stance}[/]  "
+            f"候选均分: [bold]{avg_score}[/]  "
+            f"当日市场均涨: [{gain_loss_color(market_avg_change if isinstance(market_avg_change, (int, float)) else 0)}]{market_avg_change}[/]%"
+            if isinstance(market_avg_change, (int, float))
+            else f"▶ 基调: [bold {stance_color}]{stance}[/]  候选均分: [bold]{avg_score}[/]"
+        )
+        if summary:
+            lines.append(f"[dim]{summary}[/]")
+        lines.append("")
+
+        lines.append("[bold]⭐ 首选（3-12个月）[/]")
+        if first_choices:
+            for item in first_choices[:5]:
+                logic = "、".join(item.get("logic", [])[:3]) or "等待更多长期信号"
+                risks = "、".join(item.get("risks", [])[:2]) or "暂无明显风险"
+                build_range = item.get("build_range", ["-", "-"])
+                lines.append(
+                    f"  [{POSITIVE_COLOR}]{item['code']}[/] {item['name']}  "
+                    f"评分[bold]{item['score']}[/]  建仓区间 [bold yellow]{build_range[0]}-{build_range[1]}[/]"
+                )
+                lines.append(f"    [dim]逻辑: {logic}[/]")
+                lines.append(f"    [dim]风险: {risks} | 持有: {item.get('holding_period', '-')}[/]")
+        else:
+            lines.append("  [dim]暂无首选标的[/]")
+
+        lines.append("")
+        lines.append("[bold]📝 备选[/]")
+        if backups:
+            for item in backups[:4]:
+                build_range = item.get("build_range", ["-", "-"])
+                logic = "、".join(item.get("logic", [])[:2]) or "等待趋势确认"
+                lines.append(
+                    f"  [{POSITIVE_COLOR}]{item['code']}[/] {item['name']}  "
+                    f"评分{item['score']}  区间 {build_range[0]}-{build_range[1]}"
+                )
+                lines.append(f"    [dim]{logic}[/]")
+        else:
+            lines.append("  [dim]暂无备选标的[/]")
+
+        lines.append("")
+        lines.append("[bold]👀 观察[/]")
+        if watch_only:
+            for item in watch_only[:3]:
+                risks = "、".join(item.get("risks", [])[:2]) or "等待估值和趋势更匹配"
+                lines.append(f"  {item['code']} {item['name']} — [dim]{risks}[/]")
+        else:
+            lines.append("  [dim]暂无观察名单[/]")
+
+        lines.append("")
+        lines.append(
+            f"[dim]说明：本面板只服务中长期持有，不参与短线买卖决策；仅展示价格≤{LONGTERM_MAX_PRICE}元标的。按 ESC/Q 返回。[/]"
+        )
+        self.query_one("#longterm-box", Static).update("\n".join(lines))
+
+    def action_dismiss_panel(self):
+        self.dismiss(None)
+
+
 # ══════════════════ 市场整体判断面板 ══════════════════
 
 class MarketJudgmentPanel(Static):
@@ -801,7 +932,7 @@ class AstockDashboard(App):
         Binding("s", "force_scan", "扫描"), Binding("b", "buy", "买入"),
         Binding("e", "sell", "卖出"), Binding("v", "view_chart", "走势"),
         Binding("w", "watch_chart", "关注"), Binding("h", "view_history", "记录"),
-        Binding("m", "profit_chart", "盈亏"),
+        Binding("m", "profit_chart", "盈亏"), Binding("l", "longterm_panel", "中长"),
     ]
     def __init__(self):
         super().__init__()
@@ -922,7 +1053,7 @@ class AstockDashboard(App):
         hs = f"{len(pf.get('holdings',[]))}只持仓" if pf.get("holdings") else "空仓"
         self.query_one("#status-bar", Static).update(
             f"  💰 可用: [bold]{s['cash']:.2f}[/]  |  {hs}  |  {trading}  |  "
-            f"分析: [bold]{t}[/]  |  S扫描 B买入 E卖出 V/W走势 H记录 M盈亏"
+            f"分析: [bold]{t}[/]  |  S扫描 B买入 E卖出 V/W走势 H记录 M盈亏 L中长"
         )
     def _update_panels(self):
         self.query_one("#judgment-panel", MarketJudgmentPanel).update_data()
@@ -970,6 +1101,9 @@ class AstockDashboard(App):
     def action_profit_chart(self):
         """M键：查看每日浮盈折线图"""
         self.push_screen(ProfitChartScreen())
+    def action_longterm_panel(self):
+        """L键：打开独立的中长期投资面板。"""
+        self.push_screen(LongTermPanelScreen())
     def action_view_history(self):
         """H键：查看持仓股票的交易记录"""
         pf = load_portfolio()

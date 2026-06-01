@@ -1,0 +1,225 @@
+{
+  "session": "longterm",
+  "timestamp": "2026-06-01T14:42:12.228402+08:00",
+  "focus": "中长期独立分析",
+  "market_view": {
+    "stance": "偏进攻",
+    "summary": "长期趋势股占优，可考虑分批建仓。 短线环境偏弱，建仓节奏应放慢。",
+    "avg_candidate_score": 90.33,
+    "strong_candidate_count": 15,
+    "market_avg_change": -2.38,
+    "is_cached": false
+  },
+  "review_summary": "长期趋势股占优，可考虑分批建仓。 短线环境偏弱，建仓节奏应放慢。",
+  "core_plan": "当前基调为偏进攻；优先在建仓区间内分批买入首选标的，避免把短线波动当作中长期卖点。",
+  "first_choices": [
+    {
+      "code": "000725",
+      "name": "京东方Ａ",
+      "price": 5.37,
+      "score": 100,
+      "tier": "首选",
+      "holding_period": "6-12个月",
+      "build_range": [
+        4.11,
+        4.28
+      ],
+      "logic": [
+        "长周期多头排列",
+        "年线走平向上",
+        "距年内高点有合理回撤",
+        "PB较低(1.5)",
+        "30天新闻偏多"
+      ],
+      "risks": [
+        "60日波动率偏高"
+      ],
+      "valuation": {
+        "pe": 29.13,
+        "pb": 1.46
+      },
+      "trend": {
+        "ma60": 4.28,
+        "ma120": 4.28,
+        "ma250": 4.14,
+        "drawdown_from_high_pct": -16.09,
+        "rebound_from_low_pct": 34.83,
+        "volatility_60d_pct": 49.21
+      },
+      "news": {
+        "score_adj": 10,
+        "summary": "30天新闻偏多",
+        "highlights": [
+          "🟢 京东方A：回购股份方案已实施完毕 累计回购约42.03亿元",
+          "🟢 京东方A：斥资42.03亿元累计回购10.05亿股 全部用于股权激励",
+          "🟢 京东方A：首次回购723.18万股B股"
+        ]
+      }
+    },
+    {
+      "code": "300750",
+      "name": "宁德时代",
+      "price": 419.39,
+      "score": 100,
+      "tier": "首选",
+      "holding_period": "6-12个月",
+      "build_range": [
+        395.51,
+        411.99
+      ],
+      "logic": [
+        "长周期多头排列",
+        "年线走平向上",
+        "距年内高点有合理回撤",
+        "PE较合理(23.4)"
+      ],
+      "risks": [
+        "暂无明显额外风险"
+      ],
+      "valuation": {
+        "pe": 23.39,
+        "pb": 5.94
+      },
+      "trend": {
+        "ma60": 411.99,
+        "ma120": 388.97,
+        "ma250": 348.37,
+        "drawdown_from_high_pct": -9.55,
+        "rebound_from_low_pct": 78.13,
+        "volatility_60d_pct": 39.15
+      },
+      "news": {
+        "score_adj": 0,
+        "summary": "30天新闻中性",
+        "highlights": []
+      }
+    },
+    {
+      "code": "603259",
+      "name": "药明康德",
+      "price": 99.52,
+      "score": 100,
+      "tier": "首选",
+      "holding_period": "6-12个月",
+      "build_range": [
+        96.32,
+        100.34
+      ],
+      "logic": [
+        "长周期多头排列",
+        "年线走平向上",
+        "距年内高点有合理回撤",
+        "PE较合理(16.0)",
+        "30天新闻偏多"
+      ],
+      "risks": [
+        "暂无明显额外风险"
+      ],
+      "valuation": {
+        "pe": 15.96,
+        "pb": 3.73
+      },
+      "trend": {
+        "ma60": 100.34,
+        "ma120": 98.0,
+        "ma250": 93.08,
+        "drawdown_from_high_pct": -12.25,
+        "rebound_from_low_pct": 66.83,
+        "volatility_60d_pct": 40.06
+      },
+      "news": {
+        "score_adj": 10,
+        "summary": "30天新闻偏多",
+        "highlights": [
+          "🟢 药明康德回购87万股 总支付1.11亿港元",
+          "🟢 分红季|红利质量（931468.CSI）有多只成分股5月28日进行股权登",
+          "🟢 分红季来了，178只股即将分红"
+        ]
+      }
+    },
+    {
+      "code": "000021",
+      "name": "深科技",
+      "price": 36.33,
+      "score": 95,
+      "tier": "首选",
+      "holding_period": "6-12个月",
+      "build_range": [
+        30.25,
+        31.52
+      ],
+      "logic": [
+        "长周期多头排列",
+        "年线走平向上",
+        "距年内高点有合理回撤",
+        "30天新闻偏多"
+      ],
+      "risks": [
+        "60日波动率偏高"
+      ],
+      "valuation": {
+        "pe": 59.04,
+        "pb": 4.28
+      },
+      "trend": {
+        "ma60": 31.52,
+        "ma120": 29.49,
+        "ma250": 25.34,
+        "drawdown_from_high_pct": -15.39,
+        "rebound_from_low_pct": 139.41,
+        "volatility_60d_pct": 61.79
+      },
+      "news": {
+        "score_adj": 10,
+        "summary": "30天新闻偏多",
+        "highlights": [
+          "🟢 深科技：子公司拟投资14.7亿元扩大高端存储芯片封测产能",
+          "🟢 深科技拟投14.7亿元扩产高端存储芯片封测"
+        ]
+      }
+    },
+    {
+      "code": "000938",
+      "name": "紫光股份",
+      "price": 27.75,
+      "score": 95,
+      "tier": "首选",
+      "holding_period": "6-12个月",
+      "build_range": [
+        26.95,
+        28.07
+      ],
+      "logic": [
+        "长周期多头排列",
+        "年线走平向上",
+        "距年内高点有合理回撤",
+        "30天新闻偏多"
+      ],
+      "risks": [
+        "60日波动率偏高"
+      ],
+      "valuation": {
+        "pe": 25.18,
+        "pb": 5.11
+      },
+      "trend": {
+        "ma60": 28.07,
+        "ma120": 26.72,
+        "ma250": 26.37,
+        "drawdown_from_high_pct": -16.96,
+        "rebound_from_low_pct": 28.14,
+        "volatility_60d_pct": 54.81
+      },
+      "news": {
+        "score_adj": 10,
+        "summary": "30天新闻偏多",
+        "highlights": [
+          "🟢 28股今日获机构买入评级 6股上涨空间超20%",
+          "🟢 【中证快报】5月18日中证投资资讯 | 蚂蚁集团入股机器视觉控制解决方案"
+        ]
+      }
+    }
+  ],
+  "backups": [],
+  "watch_only": []
+}

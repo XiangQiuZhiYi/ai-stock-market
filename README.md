@@ -69,6 +69,7 @@ python3 init_portfolio.py
 |------|------|
 | `portfolio.json` | 当前持仓数据（现金、持仓列表、交易历史） |
 | `suggestions.json` | 最新分析建议（面板读取展示） |
+| `longterm_suggestions.json` | 独立的中长期分析结果（不影响短线面板） |
 | `market_data.json` | 最近一次行情快照 |
 | `analysis_context.json` | 分析上下文（可供外部AI使用） |
 
@@ -202,6 +203,28 @@ python3 init_portfolio.py
 ---
 
 ## 编程调用示例
+
+## 中长期分析（独立于短线）
+
+中长期分析是一条**完全独立链路**：
+
+- 不写 `suggestions.json`
+- 不写 `market_data.json`
+- 不调用 `scheduled_analysis.py`
+- 输出到 `longterm_suggestions.json` 和 `longterm_logs/YYYY-MM-DD/longterm.json`
+
+运行命令：
+
+```bash
+python3 longterm_analysis.py
+```
+
+适用场景：
+
+- 3-12 个月持有思路
+- 候选标的价格不超过 60 元
+- 更关注 MA60/MA120/MA250、估值粗筛、30天新闻与波动率
+- 不使用分时图、短线止盈止损、日内涨跌作为核心依据
 
 ### 分析单只股票
 
