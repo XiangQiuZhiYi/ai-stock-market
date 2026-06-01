@@ -1,0 +1,284 @@
+{
+  "trading_time": true,
+  "total_stocks": 100,
+  "candidate_count": 33,
+  "top_stocks": [
+    {
+      "code": "600900",
+      "name": "长江电力",
+      "price": 27.7,
+      "change_pct": 1.76,
+      "score": 88,
+      "signal": "买入",
+      "signals": [
+        "短期反弹",
+        "RSI=55",
+        "MACD多头",
+        "触及上轨",
+        "主力今日流入7.08亿 (5日累计流入)",
+        "60日新高",
+        "突破平台(振幅3%)",
+        "回踩MA20"
+      ],
+      "ma5": 26.97,
+      "ma10": 26.96,
+      "ma20": 26.98,
+      "rsi": 55.2,
+      "macd_signal": "金叉",
+      "capital_flow": "主力今日流入7.08亿 (5日累计流入)",
+      "patterns": [
+        "new_high_60",
+        "platform_breakout",
+        "pullback_ma20"
+      ],
+      "news_sentiment": "neutral",
+      "key_news": []
+    },
+    {
+      "code": "601208",
+      "name": "东材科技",
+      "price": 49.8,
+      "change_pct": -8.51,
+      "score": 82,
+      "signal": "买入",
+      "signals": [
+        "多头排列 ↑",
+        "RSI=65",
+        "MACD多头",
+        "KDJ金叉",
+        "大跌-8.5%",
+        "消息面偏多"
+      ],
+      "ma5": 53.23,
+      "ma10": 50.42,
+      "ma20": 46.94,
+      "rsi": 65.0,
+      "macd_signal": "金叉",
+      "capital_flow": "",
+      "patterns": [],
+      "news_sentiment": "positive",
+      "key_news": [
+        "🟢 多家A股公司称PPO树脂“满产满销” 算力基建带火高频高速覆"
+      ]
+    },
+    {
+      "code": "600176",
+      "name": "中国巨石",
+      "price": 42.26,
+      "change_pct": -2.81,
+      "score": 78,
+      "signal": "买入",
+      "signals": [
+        "多头排列 ↑",
+        "RSI=65",
+        "MACD多头",
+        "KDJ超买",
+        "主力今日流入2350万 (5日累计流入)"
+      ],
+      "ma5": 40.41,
+      "ma10": 37.56,
+      "ma20": 37.24,
+      "rsi": 65.4,
+      "macd_signal": "金叉",
+      "capital_flow": "主力今日流入2350万 (5日累计流入)",
+      "patterns": [],
+      "news_sentiment": "neutral",
+      "key_news": []
+    },
+    {
+      "code": "600036",
+      "name": "招商银行",
+      "price": 37.98,
+      "change_pct": 2.32,
+      "score": 75,
+      "signal": "买入",
+      "signals": [
+        "空头排列 ↓",
+        "超卖(RSI=17)",
+        "MACD空头",
+        "KDJ超卖",
+        "主力今日流入8.07亿 (5日累计流入)",
+        "消息面利好"
+      ],
+      "ma5": 37.02,
+      "ma10": 37.19,
+      "ma20": 37.69,
+      "rsi": 16.9,
+      "macd_signal": "死叉",
+      "capital_flow": "主力今日流入8.07亿 (5日累计流入)",
+      "patterns": [],
+      "news_sentiment": "positive",
+      "key_news": [
+        "🟢 银行收紧零售信贷风控？不同银行体感有温差",
+        "🟢 银行股大分化：建行股价创新高，股份行普跌，城商行“独霸”四强"
+      ]
+    },
+    {
+      "code": "600601",
+      "name": "方正科技",
+      "price": 13.24,
+      "change_pct": 2.16,
+      "score": 73,
+      "signal": "买入",
+      "signals": [
+        "多头排列 ↑",
+        "RSI=56",
+        "MACD空头",
+        "主力今日流入7.79亿 (5日累计流入)"
+      ],
+      "ma5": 13.05,
+      "ma10": 12.64,
+      "ma20": 12.63,
+      "rsi": 55.6,
+      "macd_signal": "死叉",
+      "capital_flow": "主力今日流入7.79亿 (5日累计流入)",
+      "patterns": [],
+      "news_sentiment": "neutral",
+      "key_news": []
+    },
+    {
+      "code": "000021",
+      "name": "深科技",
+      "price": 39.96,
+      "change_pct": -6.31,
+      "score": 72,
+      "signal": "买入",
+      "signals": [
+        "多头排列 ↑",
+        "超买(RSI=78)",
+        "MACD多头",
+        "大跌-6.3%",
+        "消息面强利好(8条)"
+      ],
+      "ma5": 41.65,
+      "ma10": 39.08,
+      "ma20": 35.27,
+      "rsi": 78.4,
+      "macd_signal": "金叉",
+      "capital_flow": "",
+      "patterns": [],
+      "news_sentiment": "positive",
+      "key_news": [
+        "🟢 股价尾盘“抢跑”！000021，晚间传来利好",
+        "🔴 股价尾盘“抢跑”！000021，晚间传来利好",
+        "🟢 又见股价“抢跑”！000021 晚间放利好"
+      ]
+    },
+    {
+      "code": "002436",
+      "name": "兴森科技",
+      "price": 38.45,
+      "change_pct": 5.81,
+      "score": 68,
+      "signal": "关注",
+      "signals": [
+        "多头排列 ↑",
+        "RSI=64",
+        "MACD多头",
+        "KDJ死叉",
+        "大涨5.8%",
+        "消息面偏多"
+      ],
+      "ma5": 37.0,
+      "ma10": 34.98,
+      "ma20": 33.01,
+      "rsi": 64.1,
+      "macd_signal": "金叉",
+      "capital_flow": "",
+      "patterns": [],
+      "news_sentiment": "positive",
+      "key_news": [
+        "🟢 112只股即将实施分红（名单）"
+      ]
+    },
+    {
+      "code": "000063",
+      "name": "中兴通讯",
+      "price": 36.69,
+      "change_pct": -4.2,
+      "score": 64,
+      "signal": "关注",
+      "signals": [
+        "空头排列 ↓",
+        "RSI=49",
+        "MACD空头",
+        "KDJ金叉",
+        "底部放量反转(跌-12%后)",
+        "消息面利好"
+      ],
+      "ma5": 36.11,
+      "ma10": 36.44,
+      "ma20": 37.15,
+      "rsi": 48.7,
+      "macd_signal": "死叉",
+      "capital_flow": "",
+      "patterns": [
+        "bottom_reversal"
+      ],
+      "news_sentiment": "positive",
+      "key_news": [
+        "🟢 中兴通讯首次回购1926万股 金额6.7亿元",
+        "🟢 9.79亿资金抢筹云南锗业，机构狂买华虹公司丨龙虎榜",
+        "🔴 太赫兹概念下跌2.96%，6股主力资金净流出超亿元"
+      ]
+    },
+    {
+      "code": "300433",
+      "name": "蓝思科技",
+      "price": 40.67,
+      "change_pct": 1.09,
+      "score": 63,
+      "signal": "关注",
+      "signals": [
+        "多头排列 ↑",
+        "超买(RSI=79)",
+        "MACD多头",
+        "KDJ超买",
+        "主力今日流入6451万 (5日累计流入)"
+      ],
+      "ma5": 39.38,
+      "ma10": 38.06,
+      "ma20": 33.34,
+      "rsi": 79.1,
+      "macd_signal": "金叉",
+      "capital_flow": "主力今日流入6451万 (5日累计流入)",
+      "patterns": [],
+      "news_sentiment": "neutral",
+      "key_news": []
+    },
+    {
+      "code": "000725",
+      "name": "京东方Ａ",
+      "price": 5.11,
+      "change_pct": -10.04,
+      "score": 62,
+      "signal": "关注",
+      "signals": [
+        "多头排列 ↑",
+        "超买(RSI=88)",
+        "MACD多头",
+        "KDJ超买",
+        "大跌-10.0%",
+        "放量突破平台(振幅15%)"
+      ],
+      "ma5": 5.52,
+      "ma10": 4.92,
+      "ma20": 4.55,
+      "rsi": 87.6,
+      "macd_signal": "金叉",
+      "capital_flow": "",
+      "patterns": [
+        "platform_breakout_vol"
+      ],
+      "news_sentiment": "neutral",
+      "key_news": []
+    }
+  ],
+  "market_stats": {
+    "up_count": 41,
+    "down_count": 59,
+    "limit_up": 2,
+    "limit_down": 5,
+    "avg_change": -1.12
+  }
+}

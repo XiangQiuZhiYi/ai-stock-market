@@ -1,0 +1,213 @@
+{
+  "session": "afternoon",
+  "timestamp": "2026-05-29T15:00:59.433160+08:00",
+  "focus": "全日复盘+次日展望",
+  "morning_reference": {
+    "decision": "",
+    "actions": []
+  },
+  "midday_reference": {
+    "strategy": [
+      "持仓运行正常，继续持有观望"
+    ]
+  },
+  "market": {
+    "stats": {
+      "up_count": 15,
+      "down_count": 19,
+      "limit_up": 0,
+      "limit_down": 4,
+      "avg_change": -1.8
+    },
+    "day_summary": "均涨-1.80%"
+  },
+  "portfolio": {
+    "cash": 3294.98,
+    "total_value": 4922.98,
+    "profit": -77.02,
+    "day_change": 0.0,
+    "positions": [
+      {
+        "code": "300184",
+        "name": "力源信息",
+        "shares": 100,
+        "buy_price": 17.0,
+        "current_price": 16.28,
+        "pnl_pct": -4.24,
+        "stop_loss": 16.15,
+        "take_profit": 18.36,
+        "score": 100,
+        "signals": [
+          "多头排列 ↑",
+          "RSI=61",
+          "MACD金叉 ↑",
+          "KDJ金叉",
+          "窄幅震荡",
+          "消息面利好"
+        ]
+      }
+    ]
+  },
+  "plan_execution": {
+    "planned": [],
+    "executed": []
+  },
+  "lessons": "未生成早盘计划，复盘闭环不完整；明日开盘前先输出早盘计划",
+  "next_day_plan": "市场弱势，只守不攻，优先处理止损和回撤；力源信息浮亏-4.2%，跌破16.15止损；600900 长江电力 回踩 27.51 附近再观察；002241 歌尔股份 回踩 26.76 附近再观察；600703 三安光电 回踩 15.49 附近再观察；若大盘低开超过1%，暂缓所有新开仓",
+  "next_day_focus": [
+    {
+      "code": "600900",
+      "name": "长江电力",
+      "score": 75,
+      "signal": "短期反弹",
+      "target_price": 27.51
+    },
+    {
+      "code": "002241",
+      "name": "歌尔股份",
+      "score": 73,
+      "signal": "多头排列 ↑",
+      "target_price": 26.76
+    },
+    {
+      "code": "600703",
+      "name": "三安光电",
+      "score": 69,
+      "signal": "KDJ金叉",
+      "target_price": 15.49
+    }
+  ],
+  "review_summary": "市场均涨-1.80%偏弱，力源信息-4.2%，接近止损16.15；今日以观察为主，明日优先风险控制。",
+  "top_candidates": [
+    {
+      "code": "601208",
+      "name": "东材科技",
+      "score": 82,
+      "price": 49.47,
+      "signals": [
+        "多头排列 ↑",
+        "RSI=65",
+        "MACD多头",
+        "KDJ金叉",
+        "大跌-9.1%"
+      ]
+    },
+    {
+      "code": "600900",
+      "name": "长江电力",
+      "score": 75,
+      "price": 27.73,
+      "signals": [
+        "短期反弹",
+        "RSI=55",
+        "MACD多头",
+        "触及上轨",
+        "60日新高"
+      ]
+    },
+    {
+      "code": "002241",
+      "name": "歌尔股份",
+      "score": 73,
+      "price": 26.98,
+      "signals": [
+        "多头排列 ↑",
+        "RSI=70",
+        "MACD多头",
+        "放量突破平台(振幅10%)",
+        "消息面利空"
+      ]
+    },
+    {
+      "code": "000021",
+      "name": "深科技",
+      "score": 72,
+      "price": 39.5,
+      "signals": [
+        "多头排列 ↑",
+        "超买(RSI=78)",
+        "MACD多头",
+        "大跌-7.4%",
+        "消息面强利好(8条)"
+      ]
+    },
+    {
+      "code": "600703",
+      "name": "三安光电",
+      "score": 69,
+      "price": 15.61,
+      "signals": [
+        "RSI=61",
+        "MACD空头",
+        "KDJ金叉",
+        "大跌-7.4%",
+        "回踩MA20"
+      ]
+    },
+    {
+      "code": "002436",
+      "name": "兴森科技",
+      "score": 68,
+      "price": 38.55,
+      "signals": [
+        "多头排列 ↑",
+        "RSI=64",
+        "MACD多头",
+        "KDJ死叉",
+        "大涨6.1%"
+      ]
+    },
+    {
+      "code": "300179",
+      "name": "四方达",
+      "score": 67,
+      "price": 45.94,
+      "signals": [
+        "多头排列 ↑",
+        "超买(RSI=71)",
+        "MACD多头",
+        "触及上轨",
+        "KDJ超买"
+      ]
+    },
+    {
+      "code": "000063",
+      "name": "中兴通讯",
+      "score": 64,
+      "price": 36.67,
+      "signals": [
+        "空头排列 ↓",
+        "RSI=49",
+        "MACD空头",
+        "KDJ金叉",
+        "底部放量反转(跌-12%后)"
+      ]
+    },
+    {
+      "code": "000725",
+      "name": "京东方Ａ",
+      "score": 62,
+      "price": 5.11,
+      "signals": [
+        "多头排列 ↑",
+        "超买(RSI=88)",
+        "MACD多头",
+        "KDJ超买",
+        "大跌-10.0%"
+      ]
+    },
+    {
+      "code": "600036",
+      "name": "招商银行",
+      "score": 62,
+      "price": 37.99,
+      "signals": [
+        "空头排列 ↓",
+        "超卖(RSI=17)",
+        "MACD空头",
+        "KDJ超卖",
+        "消息面利好"
+      ]
+    }
+  ]
+}
